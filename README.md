@@ -1,21 +1,15 @@
 # Mass Spring System
 
-Mass spring system using libigl.
+Mass spring system with linearly time implicit time integrator using libigl.
+This implementation follows the descriptions given in the url below, but does not directly use the skeleton code.
 
-## Dependencies
+https://github.com/dilevin/CSC417-a2-mass-spring-3d
 
-The only dependencies are stl, eigen, [libigl](http://libigl.github.io/libigl/) and
-the dependencies of the `igl::opengl::glfw::Viewer`.
-
-The cmake build system will attempt to find libigl according to environment variables (e.g., `LIBIGL`) and searching in common desitinations (e.g., `/usr/local/libigl/`). If you haven't installed libigl before, we recommend you to clone a copy of libigl right here:
-
-    cd libigl-example-project/
-    git clone https://github.com/libigl/libigl.git
+https://github.com/libigl/libigl-example-project
 
 ## Compile
 
-Compile this project using the standard cmake routine:
-
+    git clone https://github.com/libigl/libigl.git
     mkdir build
     cd build
     cmake ..
