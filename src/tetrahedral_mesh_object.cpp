@@ -2,6 +2,7 @@
 #include <igl/readOFF.h>
 #include <igl/copyleft/tetgen/tetrahedralize.h>
 #include <igl/massmatrix.h>
+#include <igl/decimate.h>
 #include <igl/edges.h>
 #include <igl/sort.h>
 #include <vector>
@@ -11,18 +12,19 @@
 
 using Eigen::MatrixXd, Eigen::VectorXd, Eigen::VectorXi, Eigen::MatrixXi;
 
-TetrahedralMeshObject::TetrahedralMeshObject(char const* file, double k, double size) {
+TetrahedralMeshObject::TetrahedralMeshObject(char const* file, double k, double scale, int decimate) {
   this->file = file;
   this->k = k;
-  this->size = size;
+  this->scale = scale;
+  this->decimate = decimate;
   init();
 }
 
-#include <igl/isdiag.h>
-void TetrahedralMeshObject::set_massmatrix() {
+void TetrahedralMeshObject::set_mass() {
     Eigen::SparseMatrix<double> _M;
     igl::massmatrix(V, T, igl::MASSMATRIX_TYPE_BARYCENTRIC, _M);
     M = _M.diagonal();
+    std::cout<<"mass: "<<M.sum()<<std::endl;
 }
 
 void TetrahedralMeshObject::set_mesh() {
@@ -30,9 +32,18 @@ void TetrahedralMeshObject::set_mesh() {
   MatrixXi _F;
 
   igl::readOFF(this->file, _V, _F);
-  _V *= size;
+  _V *= scale;
 
-  igl::copyleft::tetgen::tetrahedralize(_V, _F, "pq1.414a0.1", V, T, F);
+  if(decimate>0){
+    MatrixXd U;
+    MatrixXi G;
+    VectorXi J;
+    igl::decimate(_V, _F, decimate, U, G, J);
+    _V.swap(U);
+    _F.swap(G);
+  }
+
+  igl::copyleft::tetgen::tetrahedralize(_V, _F, "pq1.414", V, T, F);
 
   std::cout<<"x: "<<V.col(0).minCoeff()<<" "<<V.col(0).maxCoeff()<<std::endl
            <<"y: "<<V.col(1).minCoeff()<<" "<<V.col(1).maxCoeff()<<std::endl
@@ -50,6 +61,6 @@ void TetrahedralMeshObject::set_anchor_points() {
 }
 
 void TetrahedralMeshObject::set_springs() {
-  igl::edges(F, S);
+  igl::edges(T, S);
   K = VectorXd::Ones(S.rows())*k;
 }

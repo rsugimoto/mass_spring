@@ -10,9 +10,10 @@ class Cloth: public MeshObject {
         void set_springs();
 
         double k;
-        double size;
+        double scale;
+        int decimate;
     public:
-        Cloth(double k=5.0, double size=1.0);
+        Cloth(double k=5.0, double scale=1.0, int decimate=0);
 };
 
 #endif //__CLOTH__

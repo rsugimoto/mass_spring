@@ -8,13 +8,14 @@ class TetrahedralMeshObject: public MeshObject {
         void set_mesh();
         void set_anchor_points();
         void set_springs();
-        void set_massmatrix();
+        void set_mass();
 
         double k;
-        double size;
+        double scale;
         char const* file;
+        int decimate;
     public:
-        TetrahedralMeshObject(char const* file, double k=5.0, double size=1.0);
+        TetrahedralMeshObject(char const* file, double k=5.0, double scale=1.0, int decimate=0);
 
         Eigen::MatrixXi T;
 };

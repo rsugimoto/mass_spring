@@ -1,25 +1,26 @@
 #include "cloth.h"
 #include <igl/triangle/triangulate.h>
 #include <igl/adjacency_list.h>
-#include <igl/unique.h>
+#include <igl/decimate.h>
 #include <vector>
 #include <array>
 #include <cmath>
 
 using Eigen::MatrixXd, Eigen::VectorXd, Eigen::VectorXi, Eigen::MatrixXi;
 
-Cloth::Cloth(double k, double size) {
+Cloth::Cloth(double k, double scale, int decimate) {
   this->k = k;
-  this->size = size;
+  this->scale = scale;
+  this->decimate = decimate;
   init();
 }
 
 void Cloth::set_mesh() {
   auto _V =  (MatrixXd(4, 2) <<
-    -size/2, -size/2,
-    size/2, -size/2,
-    size/2, size/2,
-    -size/2, size/2
+    -scale/2, -scale/2,
+    scale/2, -scale/2,
+    scale/2, scale/2,
+    -scale/2, scale/2
   ).finished();
 
   auto _E =  (MatrixXi(4, 2) <<
@@ -35,17 +36,26 @@ void Cloth::set_mesh() {
   V.leftCols(2) = V_;
 
   for(auto i=0; i<V.rows(); ++i) {
-    auto a = size/2 - V(i, 1);
+    auto a = scale/2 - V(i, 1);
     V(i, 2) += a*std::sqrt(3)/2.0;
     V(i, 1) += a/2.0;
+  }
+
+  if(decimate>0){
+    MatrixXd U;
+    MatrixXi G;
+    VectorXi J;
+    igl::decimate(V, F, decimate, U, G, J);
+    V.swap(U);
+    F.swap(G);
   }
 }
 
 void Cloth::set_anchor_points() {
   A = VectorXi(2);
 
-  Eigen::RowVector3d p0; p0 <<-size/2, size/2, 0;
-  Eigen::RowVector3d p1; p1 << size/2, size/2, 0;
+  Eigen::RowVector3d p0; p0 <<-scale/2, scale/2, 0;
+  Eigen::RowVector3d p1; p1 << scale/2, scale/2, 0;
 
   (V.rowwise() - p0).rowwise().squaredNorm().minCoeff(&A(0));
   (V.rowwise() - p1).rowwise().squaredNorm().minCoeff(&A(1));
