@@ -1,4 +1,4 @@
-#include "ltiti_simulator.h"
+#include "liti_simulator.h"
 
 #include <unsupported/Eigen/KroneckerProduct>
 #include <igl/edge_lengths.h>
@@ -11,7 +11,7 @@ using Eigen::MatrixXd, Eigen::VectorXd, Eigen::VectorXi, Eigen::MatrixXi, Eigen:
 using Vector6d = Eigen::Matrix<double, 6, 1>;
 using Matrix6d = Eigen::Matrix<double, 6, 6>;
 
-LTITISimulator::LTITISimulator(const MeshObject& obj, double dt):obj(obj){
+LITISimulator::LITISimulator(const MeshObject& obj, double dt):obj(obj){
     this->dt = dt;
    
     q_curr = Eigen::Map<const VectorXd>(obj.V.data(), obj.V.rows()*3);
@@ -39,14 +39,14 @@ LTITISimulator::LTITISimulator(const MeshObject& obj, double dt):obj(obj){
     igl::edge_lengths(obj.V, obj.S, L);
 }
 
-void LTITISimulator::set_initial_config() {
+void LITISimulator::set_initial_config() {
     q_curr = Eigen::Map<const VectorXd>(obj.V.data(), obj.V.rows()*3);
     q_prev = q_curr; //deep copy
     q_dot_curr = VectorXd::Zero(obj.V.rows()*3);
     q_dot_prev = VectorXd::Zero(obj.V.rows()*3);
 }
 
-void LTITISimulator::d2Vdq2(SparseMatrix<double>& d2Vdq2) {
+void LITISimulator::d2Vdq2(SparseMatrix<double>& d2Vdq2) {
     auto q = Eigen::Map<const MatrixXd>(q_curr.data(), q_curr.rows()/3, 3);
     const MatrixXi& S = obj.S;
     const VectorXd& K = obj.K;
@@ -91,7 +91,7 @@ void LTITISimulator::d2Vdq2(SparseMatrix<double>& d2Vdq2) {
     d2Vdq2.setFromTriplets(entries.begin(), entries.end());
 }
 
-void LTITISimulator::dVdq(VectorXd& dVdq) {
+void LITISimulator::dVdq(VectorXd& dVdq) {
     auto q = Eigen::Map<const MatrixXd>(q_curr.data(), q_curr.rows()/3, 3);
     const MatrixXi& S = obj.S;
     const VectorXd& K = obj.K;
@@ -122,7 +122,7 @@ void LTITISimulator::dVdq(VectorXd& dVdq) {
     dVdq.middleRows(q.rows(), q.rows()) += obj.M*g;
 }
 
-void LTITISimulator::forward_one_step() {  
+void LITISimulator::forward_one_step() {  
     VectorXd dVdq;
     SparseMatrix<double> d2Vdq2;
     this->dVdq(dVdq);
@@ -141,7 +141,7 @@ void LTITISimulator::forward_one_step() {
     q_curr = q_prev + dt * q_dot_curr;
 }
 
-Eigen::Map<const MatrixXd> LTITISimulator::V() {
+Eigen::Map<const MatrixXd> LITISimulator::V() {
     return Eigen::Map<const MatrixXd>(q_curr.data(), q_curr.rows()/3, 3);
 }
 

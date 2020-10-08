@@ -10,7 +10,7 @@
 
 #include "cloth.h"
 #include "tetrahedral_mesh_object.h"
-#include "ltiti_simulator.h"
+#include "liti_simulator.h"
 
 int main(int argc, char *argv[]) {
   double dt=0.01, k=20.0, scale=1.0, decimate=0;
@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
   const MeshObject& obj = std::strcmp(data_src,"cloth")==0?
     static_cast<const MeshObject&>(Cloth(k, scale, decimate))
     : static_cast<const MeshObject&>(TetrahedralMeshObject(data_src, k, scale, decimate));
-  auto simulator = LTITISimulator(obj, dt);
+  auto simulator = LITISimulator(obj, dt);
   std::thread([&](){while(true)simulator.forward_one_step();}).detach();
 
   igl::opengl::glfw::Viewer viewer;

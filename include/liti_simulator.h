@@ -1,5 +1,5 @@
-#ifndef __LTITI_SIMULATOR__
-#define __LTITI_SIMULATOR__
+#ifndef __LITI_SIMULATOR__
+#define __LITI_SIMULATOR__
 
 //Reference
 //https://github.com/dilevin/CSC417-a2-mass-spring-3d
@@ -8,10 +8,10 @@
 #include <Eigen/Sparse>
 #include <mesh_object.h>
 
-//Linearly Time Implicit Time Integration Simulator
-class LTITISimulator{
+//Linearly-Implicit Time Integration Simulator
+class LITISimulator{
     public:
-        LTITISimulator(const MeshObject& obj, double dt);
+        LITISimulator(const MeshObject& obj, double dt);
         void forward_one_step();
         Eigen::Map<const Eigen::MatrixXd> V(); //behaves similarly to a constant reference
         void set_initial_config();
@@ -26,4 +26,4 @@ class LTITISimulator{
         double dt;
 };
 
-#endif //__LTITI_SIMULATOR__
+#endif //__LITI_SIMULATOR__
