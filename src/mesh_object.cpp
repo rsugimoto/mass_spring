@@ -13,3 +13,5 @@ void MeshObject::init() {
     set_springs();
     set_mass();
 }
+
+MeshObject::~MeshObject(){}

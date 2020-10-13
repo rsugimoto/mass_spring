@@ -1,15 +1,22 @@
 # Mass Spring System
 
-Mass spring system with linearly-implicit time integrator using libigl.
-This implementation follows the descriptions given in the url below, but does not directly use the skeleton code.
+Mass spring system with libigl.
+The following integrators are inpremented.
+- linearly-implicit time integrator
+- Runge-Kutta fourth-order integrator
+- Verlet integrator
 
-https://github.com/dilevin/CSC417-a2-mass-spring-3d
 
-https://github.com/libigl/libigl-example-project
+## Dependencies
+- libigl
+    
+    Run the following command in the project folder.
+    ```
+    git clone https://github.com/libigl/libigl.git
+    ```
 
 ## Compile
-
-    git clone https://github.com/libigl/libigl.git
+    
     mkdir build
     cd build
     cmake ..
@@ -20,3 +27,5 @@ https://github.com/libigl/libigl-example-project
 From within the `build` directory just issue:
 
     ./main
+
+Read main.cpp for command line options.

@@ -12,6 +12,7 @@ class MeshObject {
         void init();
 
     public:
+        virtual ~MeshObject();
         Eigen::MatrixXd V;
         Eigen::MatrixXi F;
         Eigen::VectorXd M; //mass
