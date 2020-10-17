@@ -49,7 +49,7 @@ void Simulator::set_initial_config() {
 void Simulator::d2Vdq2(SparseMatrix<double>& d2Vdq2, const Eigen::VectorXd& q_curr) const {
     auto q = Eigen::Map<const MatrixXd>(q_curr.data(), q_curr.rows()/3, 3);
     const MatrixXi& S = obj.S;
-    const VectorXd& K = obj.K;
+    const double k = obj.k;
 
     std::vector<Eigen::Triplet<double>> entries;
 
@@ -58,7 +58,6 @@ void Simulator::d2Vdq2(SparseMatrix<double>& d2Vdq2, const Eigen::VectorXd& q_cu
         auto q0 = q.row(S(s, 0)); //position of mass 0
         auto q1 = q.row(S(s, 1)); //position of mass 1
         double l = L(s); //rest length of the spring
-        int k = K(s); //spring constant
 
         auto q_diff = q0 - q1;
         Vector3d q_squared = q_diff.colwise().squaredNorm();
@@ -94,7 +93,7 @@ void Simulator::d2Vdq2(SparseMatrix<double>& d2Vdq2, const Eigen::VectorXd& q_cu
 void Simulator::dVdq(VectorXd& dVdq, const VectorXd& q_curr) const {
     auto q = Eigen::Map<const MatrixXd>(q_curr.data(), q_curr.rows()/3, 3);
     const MatrixXi& S = obj.S;
-    const VectorXd& K = obj.K;
+    const double k = obj.k;
 
     dVdq = VectorXd::Zero(q_curr.rows());
 
@@ -103,7 +102,6 @@ void Simulator::dVdq(VectorXd& dVdq, const VectorXd& q_curr) const {
         auto q0 = q.row(S(s, 0)); //position of mass 0
         auto q1 = q.row(S(s, 1)); //position of mass 1
         double l = L(s); //rest length of the spring
-        int k = K(s); //spring constant
 
         double q_length = (q0 - q1).norm();
         double common_factor = k*(1.-l/q_length);

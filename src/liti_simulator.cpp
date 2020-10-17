@@ -1,5 +1,4 @@
 #include "liti_simulator.h"
-#include <Eigen/SparseCholesky>
 
 using Eigen::MatrixXd, Eigen::VectorXd, Eigen::VectorXi, Eigen::MatrixXi, Eigen::SparseMatrix, Eigen::SparseVector, Eigen::Vector3d;
 
@@ -13,7 +12,7 @@ void LITISimulator::forward_one_step() {
     this->dVdq(dVdq, q_curr);
     this->d2Vdq2(d2Vdq2, q_curr);
 
-    SparseMatrix<double> A = P * (M - (dt*dt) * (-d2Vdq2)) * (P.transpose());
+    SparseMatrix<double> A = P * (M - (dt*dt) * (-d2Vdq2)) * P.transpose();
     Eigen::VectorXd b =  P * (M * q_dot_curr + dt * (-dVdq));
 
     Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;

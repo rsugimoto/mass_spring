@@ -27,10 +27,12 @@ void VerletSimulator::forward_one_step() {
     VectorXd dVdq;
     this->dVdq(dVdq, q_curr);
     VectorXd q_next = q_curr + P.transpose() * P * (q_curr - q_prev + dt*dt*M_inverse*(-dVdq));
+    // VectorXd q_dot_next = (q_next - q_curr)/dt;
+    VectorXd q_dot_next = (q_next - q_prev)/(2.0*dt);
 
     q_prev.swap(q_curr);
     q_curr.swap(q_next);
 
     q_dot_prev.swap(q_dot_curr);
-    q_dot_curr = (q_curr - q_prev)/dt;
+    q_dot_curr.swap(q_dot_next);
 }

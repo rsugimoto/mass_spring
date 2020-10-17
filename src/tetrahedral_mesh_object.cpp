@@ -62,5 +62,4 @@ void TetrahedralMeshObject::set_anchor_points() {
 
 void TetrahedralMeshObject::set_springs() {
   igl::edges(T, S);
-  K = VectorXd::Ones(S.rows())*k;
 }

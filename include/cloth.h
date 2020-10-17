@@ -9,7 +9,6 @@ class Cloth: public MeshObject {
         void set_anchor_points();
         void set_springs();
 
-        double k;
         double scale;
         int decimate;
     public:

@@ -6,7 +6,7 @@
 
 #include "simulator.h"
 
-//Linearly-Implicit Time Integration Simulator
+//RK4 Integration Simulator
 class RK4Simulator: public Simulator{
     private:
         Eigen::SparseMatrix<double> M_inverse;

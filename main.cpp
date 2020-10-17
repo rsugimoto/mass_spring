@@ -16,6 +16,7 @@
 #include "liti_simulator.h"
 #include "verlet_simulator.h"
 #include "rk4_simulator.h"
+#include "bcd_simulator.h"
 
 int main(int argc, char *argv[]) {
   double dt=0.01, k=20.0, scale=1.0, decimate=0;
@@ -35,7 +36,8 @@ int main(int argc, char *argv[]) {
   std::unique_ptr<Simulator> simulator;
   // simulator.reset(new LITISimulator(obj, dt));
   // simulator.reset(new VerletSimulator(obj, dt));
-  simulator.reset(new RK4Simulator(obj, dt));
+  // simulator.reset(new RK4Simulator(obj, dt));
+  simulator.reset(new BCDSimulator(obj, dt));
   volatile bool thread_suspend_flag = false;
   volatile bool terminate_thread = false;
   auto simulation_thread = std::thread([&](){

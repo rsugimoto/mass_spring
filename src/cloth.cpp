@@ -77,10 +77,8 @@ void Cloth::set_springs() {
   }
 
   S = MatrixXi(springs.size(),2);
-  K = VectorXd(springs.size());
   for(auto i=0; i<springs.size(); ++i){
     S(i, 0) = springs[i][0];
     S(i, 1) = springs[i][1];
-    K(i) = k;
   }
 }

@@ -10,7 +10,6 @@ class TetrahedralMeshObject: public MeshObject {
         void set_springs();
         void set_mass();
 
-        double k;
         double scale;
         char const* file;
         int decimate;

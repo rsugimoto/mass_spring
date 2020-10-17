@@ -6,13 +6,13 @@
 
 #include "simulator.h"
 
-//Linearly-Implicit Time Integration Simulator
+//Verlet Integration Simulator
 class VerletSimulator: public Simulator{
     private:
         Eigen::SparseMatrix<double> M_inverse;
     public:
-        void set_initial_config();
         VerletSimulator(const MeshObject& obj, double dt);
+        void set_initial_config();
         void forward_one_step();
 };
 
