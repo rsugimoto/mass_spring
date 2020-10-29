@@ -9,8 +9,8 @@
 //Linearly-Implicit Time Integration Simulator
 class LITISimulator: public Simulator{
     public:
-        LITISimulator(const MeshObject& obj, double dt);
-        void forward_one_step();
+        LITISimulator(const MeshObject& obj, double k, double dt);
+        void step();
 };
 
 #endif //__LITI_SIMULATOR__

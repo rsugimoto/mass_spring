@@ -8,12 +8,10 @@
 
 //Verlet Integration Simulator
 class VerletSimulator: public Simulator{
-    private:
-        Eigen::SparseMatrix<double> M_inverse;
     public:
-        VerletSimulator(const MeshObject& obj, double dt);
+        VerletSimulator(const MeshObject& obj, double k, double dt);
         void set_initial_config();
-        void forward_one_step();
+        void step();
 };
 
 #endif //__VERLET_SIMULATOR__

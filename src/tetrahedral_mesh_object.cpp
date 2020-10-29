@@ -12,11 +12,9 @@
 
 using Eigen::MatrixXd, Eigen::VectorXd, Eigen::VectorXi, Eigen::MatrixXi;
 
-TetrahedralMeshObject::TetrahedralMeshObject(char const* file, double k, double scale, int decimate) {
-  this->file = file;
-  this->k = k;
-  this->scale = scale;
-  this->decimate = decimate;
+TetrahedralMeshObject::TetrahedralMeshObject(char const* file, double scale, int decimate)
+:file(file), scale(scale), decimate(decimate)
+{
   init();
 }
 

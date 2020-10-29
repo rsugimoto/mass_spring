@@ -2,11 +2,11 @@
 
 using Eigen::MatrixXd, Eigen::VectorXd, Eigen::VectorXi, Eigen::MatrixXi, Eigen::SparseMatrix, Eigen::SparseVector, Eigen::Vector3d;
 
-LITISimulator::LITISimulator(const MeshObject& obj, double dt):Simulator(obj, dt){
+LITISimulator::LITISimulator(const MeshObject& obj, double k, double dt):Simulator(obj, k, dt){
 
 }
 
-void LITISimulator::forward_one_step() {  
+void LITISimulator::step() {  
     VectorXd dVdq;
     SparseMatrix<double> d2Vdq2;
     this->dVdq(dVdq, q_curr);

@@ -16,12 +16,11 @@ class BCDSimulator: public Simulator{
         Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;
 
         template <typename Derived> void d(const Eigen::MatrixBase<Derived>& q, Eigen::VectorXd& d);
-        void f_ext(Eigen::VectorXd& f_ext);
-
+        
         double omega = 100.0; //strength of penalty for pinned vertices
     public:
-        BCDSimulator(const MeshObject& obj, double dt);
-        void forward_one_step();
+        BCDSimulator(const MeshObject& obj, double k, double dt);
+        void step();
 };
 
 #endif //__BCD_SIMULATOR___

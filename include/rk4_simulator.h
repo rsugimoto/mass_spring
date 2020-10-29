@@ -8,11 +8,9 @@
 
 //RK4 Integration Simulator
 class RK4Simulator: public Simulator{
-    private:
-        Eigen::SparseMatrix<double> M_inverse;
     public:
-        RK4Simulator(const MeshObject& obj, double dt);
-        void forward_one_step();
+        RK4Simulator(const MeshObject& obj, double k, double dt);
+        void step();
 };
 
 #endif //__RK4_SIMULATOR__

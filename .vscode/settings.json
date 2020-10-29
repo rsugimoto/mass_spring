@@ -96,6 +96,8 @@
         "specialfunctions": "cpp",
         "splines": "cpp",
         "__functional_03": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "sparsecholesky": "cpp",
+        "regex": "cpp"
     }
 }

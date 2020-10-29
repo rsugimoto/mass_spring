@@ -12,7 +12,7 @@ class Cloth: public MeshObject {
         double scale;
         int decimate;
     public:
-        Cloth(double k=5.0, double scale=1.0, int decimate=0);
+        Cloth(double scale=1.0, int decimate=0);
 };
 
 #endif //__CLOTH__

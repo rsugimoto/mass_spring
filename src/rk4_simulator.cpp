@@ -3,13 +3,10 @@
 
 using Eigen::MatrixXd, Eigen::VectorXd, Eigen::VectorXi, Eigen::MatrixXi, Eigen::SparseMatrix, Eigen::SparseVector, Eigen::Vector3d;
 
-RK4Simulator::RK4Simulator(const MeshObject& obj, double dt):Simulator(obj, dt){
-    SparseMatrix<double> I3(3,3);
-    I3.setIdentity();
-    M_inverse = Eigen::kroneckerProduct(I3, static_cast<SparseMatrix<double>>(obj.M.asDiagonal().inverse()));
+RK4Simulator::RK4Simulator(const MeshObject& obj, double k, double dt):Simulator(obj, k, dt){
 }
 
-void RK4Simulator::forward_one_step() {  
+void RK4Simulator::step() {  
     VectorXd dVdq;
     
     this->dVdq(dVdq, q_curr);

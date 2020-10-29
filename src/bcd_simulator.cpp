@@ -1,10 +1,8 @@
 #include "bcd_simulator.h"
 
-#include <iostream>
-
 using Eigen::MatrixXd, Eigen::VectorXd, Eigen::VectorXi, Eigen::MatrixXi, Eigen::SparseMatrix, Eigen::SparseVector, Eigen::Vector3d;
 
-BCDSimulator::BCDSimulator(const MeshObject& obj, double dt):Simulator(obj, dt){
+BCDSimulator::BCDSimulator(const MeshObject& obj, double k, double dt):Simulator(obj, k,  dt){
     int num_masses = q_curr.rows()/3;
 
     const MatrixXi& S = obj.S;
@@ -30,26 +28,20 @@ BCDSimulator::BCDSimulator(const MeshObject& obj, double dt):Simulator(obj, dt){
     C = SparseMatrix<double>(S.rows()*3, q_curr.rows());
     C.setFromTriplets(C_entries.begin(), C_entries.end());
 
-    auto  Q = omega*C.transpose()*C  + obj.k*A.transpose()*A + (1.0/(dt*dt))*M;
+    auto  Q = omega*C.transpose()*C  + k*A.transpose()*A + (1.0/(dt*dt))*M;
     solver.compute(Q);
 }
 
 template <typename Derived>
 void BCDSimulator::d(const Eigen::MatrixBase<Derived>& q, Eigen::VectorXd& d){
     Eigen::VectorXd Aq = A*q;
-    auto q_diff = Eigen::Map<MatrixXd>((Aq).data(), Aq.rows()/3, 3);
+    auto q_diff = Eigen::Map<MatrixXd>(Aq.data(), Aq.rows()/3, 3);
     d = Eigen::VectorXd(Aq.rows());
     auto d_mat = Eigen::Map<MatrixXd>(d.data(), Aq.rows()/3, 3);
     d_mat = L.asDiagonal() * (q_diff.rowwise().normalized());
 }
 
-void BCDSimulator::f_ext(Eigen::VectorXd& f_ext) {
-    double g = 9.8;
-    f_ext = VectorXd::Zero(q_curr.rows());
-    f_ext.middleRows(q_curr.rows()/3, q_curr.rows()/3) -= obj.M*g;
-}
-
-void BCDSimulator::forward_one_step() {
+void BCDSimulator::step() {
     auto q_rest = Eigen::Map<const VectorXd>(obj.V.data(), obj.V.rows()*3);
     VectorXd q_next = q_curr;
     VectorXd f_ext;
@@ -58,7 +50,7 @@ void BCDSimulator::forward_one_step() {
     VectorXd d;
     for(auto i=0; i<50; ++i){
         this->d(q_next, d);
-        auto b = (obj.k*A.transpose()*d) + omega*C.transpose()*C*q_rest + y;
+        auto b = (k*A.transpose()*d) + omega*C.transpose()*C*q_rest + y;
         q_next = solver.solve(b);
     }
 

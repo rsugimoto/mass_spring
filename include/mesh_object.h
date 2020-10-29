@@ -18,7 +18,6 @@ class MeshObject {
         Eigen::VectorXd M; //mass
         Eigen::VectorXi A; //Anchor/fixed points
         Eigen::MatrixXi S; //Springs
-        double k; //Spring Constant
 };
 
 #endif //__MESH_OBJECT__

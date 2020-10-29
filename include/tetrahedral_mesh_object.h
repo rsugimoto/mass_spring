@@ -14,7 +14,7 @@ class TetrahedralMeshObject: public MeshObject {
         char const* file;
         int decimate;
     public:
-        TetrahedralMeshObject(char const* file, double k=5.0, double scale=1.0, int decimate=0);
+        TetrahedralMeshObject(char const* file, double scale=1.0, int decimate=0);
 
         Eigen::MatrixXi T;
 };

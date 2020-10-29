@@ -8,10 +8,7 @@
 
 using Eigen::MatrixXd, Eigen::VectorXd, Eigen::VectorXi, Eigen::MatrixXi;
 
-Cloth::Cloth(double k, double scale, int decimate) {
-  this->k = k;
-  this->scale = scale;
-  this->decimate = decimate;
+Cloth::Cloth(double scale, int decimate):scale(scale), decimate(decimate) {
   init();
 }
 

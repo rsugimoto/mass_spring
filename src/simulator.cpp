@@ -9,9 +9,11 @@ using Eigen::MatrixXd, Eigen::VectorXd, Eigen::VectorXi, Eigen::MatrixXi, Eigen:
 using Vector6d = Eigen::Matrix<double, 6, 1>;
 using Matrix6d = Eigen::Matrix<double, 6, 6>;
 
-Simulator::Simulator(const MeshObject& obj, double dt):obj(obj){
-    this->dt = dt;
-   
+Simulator::Simulator(const MeshObject& obj, double k, double dt):
+    obj(obj),
+    k(k),
+    dt(dt)
+{  
     q_curr = Eigen::Map<const VectorXd>(obj.V.data(), obj.V.rows()*3);
     q_prev = q_curr; //deep copy
     q_dot_curr = VectorXd::Zero(obj.V.rows()*3);
@@ -20,6 +22,8 @@ Simulator::Simulator(const MeshObject& obj, double dt):obj(obj){
     SparseMatrix<double> I3(3,3);
     I3.setIdentity();
     this->M = Eigen::kroneckerProduct(I3, static_cast<SparseMatrix<double>>(obj.M.asDiagonal()));
+    this->M_inverse = Eigen::kroneckerProduct(I3, static_cast<SparseMatrix<double>>(obj.M.asDiagonal().inverse()));
+
 
     VectorXi V_all, notA, diff_idx;
     igl::colon<int>(0, obj.V.rows()-1, V_all);
@@ -49,7 +53,6 @@ void Simulator::set_initial_config() {
 void Simulator::d2Vdq2(SparseMatrix<double>& d2Vdq2, const Eigen::VectorXd& q_curr) const {
     auto q = Eigen::Map<const MatrixXd>(q_curr.data(), q_curr.rows()/3, 3);
     const MatrixXi& S = obj.S;
-    const double k = obj.k;
 
     std::vector<Eigen::Triplet<double>> entries;
 
@@ -93,7 +96,6 @@ void Simulator::d2Vdq2(SparseMatrix<double>& d2Vdq2, const Eigen::VectorXd& q_cu
 void Simulator::dVdq(VectorXd& dVdq, const VectorXd& q_curr) const {
     auto q = Eigen::Map<const MatrixXd>(q_curr.data(), q_curr.rows()/3, 3);
     const MatrixXi& S = obj.S;
-    const double k = obj.k;
 
     dVdq = VectorXd::Zero(q_curr.rows());
 
@@ -118,6 +120,12 @@ void Simulator::dVdq(VectorXd& dVdq, const VectorXd& q_curr) const {
     //Gravity force
     double g = 9.8;
     dVdq.middleRows(q.rows(), q.rows()) += obj.M*g;
+}
+
+void Simulator::f_ext(Eigen::VectorXd& f_ext) {
+    double g = 9.8;
+    f_ext = VectorXd::Zero(q_curr.rows());
+    f_ext.middleRows(q_curr.rows()/3, q_curr.rows()/3) -= obj.M*g;
 }
 
 Eigen::Map<const MatrixXd> Simulator::V() const {

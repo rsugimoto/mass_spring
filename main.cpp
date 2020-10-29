@@ -1,58 +1,85 @@
+#include <chrono>
+#include <cstring>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <thread>
+#include <vector>
+
+#include <cxxopts.hpp>
+#include <igl/barycenter.h>
 #include <igl/opengl/glfw/Viewer.h>
 #include <igl/opengl/glfw/imgui/ImGuiMenu.h>
-#include <igl/opengl/glfw/imgui/ImGuiHelpers.h>
-#include <igl/barycenter.h>
 #include <imgui/imgui.h>
-#include <iostream>
-#include <vector>
-#include <cstring>
-#include <thread>
-#include <memory>
-#include <chrono>
 
 #include "cloth.h"
 #include "tetrahedral_mesh_object.h"
 
-#include "liti_simulator.h"
-#include "verlet_simulator.h"
-#include "rk4_simulator.h"
 #include "bcd_simulator.h"
+#include "dttle_simulator.h"
+#include "liti_simulator.h"
+#include "rk4_simulator.h"
+#include "verlet_simulator.h"
+
+auto parse_args(int argc, char *argv[]){
+  using namespace cxxopts;
+  Options options{"Mass spring system simulator"};
+  options.add_options()
+    ("m,simulator", "type of simulator. BCD, DTTLE, LITI, RK4, or Verlet", value<std::string>()->default_value("BCD"))
+    ("s,src", "input mesh in off format, or \"cloth\" for default cloth mesh", value<std::string>()->default_value("cloth"))
+    ("c,scale", "scale of geometry", value<double>()->default_value("1.0"))
+    ("t,dt", "time step of simulation", value<double>()->default_value("0.01"))
+    ("k", "spring constant (not used for DTTLE simulator)", value<double>()->default_value("20.0"))
+    ("a", "constant a for DTTLE simulator", value<double>()->default_value("-5.0"))
+    ("b", "constant b for DTTLE simulator", value<double>()->default_value("-0.1"))
+    ("d,decimate", "when a non-zero integer is given, decimate the mesh to the given number of faces", value<int>()->default_value("0"))
+    ("h,help", "Print Usage");
+  auto result = options.parse(argc, argv);
+  if(result.count("help")) {std::cout<<options.help()<<std::endl; exit(0);}
+  
+  std::cout<<"simulator: "<<result["simulator"].as<std::string>()
+  <<std::endl<<"src: \""<<result["src"].as<std::string>()<<"\""
+  <<std::endl<<"scale: "<<result["scale"].as<double>()
+  <<std::endl<<"dt: "<<result["dt"].as<double>()
+  <<std::endl<<"k: "<<result["k"].as<double>()
+  <<std::endl<<"a: "<<result["a"].as<double>()
+  <<std::endl<<"b: "<<result["b"].as<double>()
+  <<std::endl<<"decimate: "<<result["decimate"].as<int>()
+  <<std::endl<<std::endl;
+  return result;
+}
 
 int main(int argc, char *argv[]) {
-  double dt=0.01, k=20.0, scale=1.0, decimate=0;
-  char const* data_src = "cloth";
-  if(argc>=2) data_src = argv[1];
-  if(argc>=3) dt = std::stod(argv[2]);
-  if(argc>=4) k = std::stod(argv[3]);
-  if(argc>=5) scale = std::stod(argv[4]);
-  if(argc>=6) decimate = std::stoi(argv[5]);
+  auto options = parse_args(argc, argv);
 
-  std::cout<<"src: \""<<data_src<<"\""<<std::endl<<"dt: "<<dt<<std::endl<<"spring constant: "<<k<<std::endl
-    <<"scale: "<<scale<<std::endl<<"decimate: "<<decimate<<std::endl<<std::endl;
+  const MeshObject& obj = options["src"].as<std::string>() == "cloth"?
+    static_cast<const MeshObject&>(Cloth(options["scale"].as<double>(), options["decimate"].as<int>()))
+    : static_cast<const MeshObject&>(TetrahedralMeshObject(options["src"].as<std::string>().c_str(), options["scale"].as<double>(), options["decimate"].as<int>()));
 
-  const MeshObject& obj = std::strcmp(data_src,"cloth")==0?
-    static_cast<const MeshObject&>(Cloth(k, scale, decimate))
-    : static_cast<const MeshObject&>(TetrahedralMeshObject(data_src, k, scale, decimate));
   std::unique_ptr<Simulator> simulator;
-  // simulator.reset(new LITISimulator(obj, dt));
-  // simulator.reset(new VerletSimulator(obj, dt));
-  // simulator.reset(new RK4Simulator(obj, dt));
-  simulator.reset(new BCDSimulator(obj, dt));
-  volatile bool thread_suspend_flag = false;
+  
+  std::string sim = options["simulator"].as<std::string>();
+  if (sim == "BCD") simulator.reset(new BCDSimulator(obj, options["k"].as<double>(), options["dt"].as<double>()));
+  else if (sim == "DTTLE") simulator.reset(new DTTLESimulator(obj, options["a"].as<double>(), options["b"].as<double>(), options["dt"].as<double>()));
+  else if (sim == "LITI") simulator.reset(new LITISimulator(obj, options["k"].as<double>(), options["dt"].as<double>()));
+  else if (sim == "RK4") simulator.reset(new RK4Simulator(obj, options["k"].as<double>(), options["dt"].as<double>())); 
+  else if (sim == "Verlet") simulator.reset(new VerletSimulator(obj, options["k"].as<double>(), options["dt"].as<double>()));
+  else {
+    std::cout<<"No simulator option\""<<options["simulator"].as<std::string>()<<"\". Using default BCD simulator."<<std::endl;
+    simulator.reset(new BCDSimulator(obj, options["k"].as<double>(), options["dt"].as<double>()));
+  }
+
+  std::mutex mtx;
   volatile bool terminate_thread = false;
   auto simulation_thread = std::thread([&](){
     auto time = std::chrono::system_clock::now();
     while(!terminate_thread){
       auto new_time = std::chrono::system_clock::now();
-      if (static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(new_time - time).count() / 1000.0) < dt) continue;
+      if (static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(new_time - time).count() / 1000.0) < options["dt"].as<double>()) continue;
       else time = new_time;
 
-      if (!thread_suspend_flag) simulator->forward_one_step();
-      else{
-        thread_suspend_flag = false;
-        while (!thread_suspend_flag);
-        thread_suspend_flag = false;
-      }
+      std::lock_guard lock(mtx);
+      simulator->step();
     }
   });
 
@@ -63,7 +90,7 @@ int main(int argc, char *argv[]) {
   viewer.core().animation_max_fps = 30.0;
   viewer.data().set_mesh(simulator->V(), obj.F);
   viewer.data().show_lines = true;
-  viewer.callback_pre_draw =  [&](igl::opengl::glfw::Viewer & viewer)->bool {
+  viewer.callback_pre_draw = [&](igl::opengl::glfw::Viewer & viewer)->bool {
     if(viewer.core().is_animating) {
       viewer.data().set_vertices(simulator->V());
       viewer.data().compute_normals();
@@ -73,6 +100,7 @@ int main(int argc, char *argv[]) {
 
   viewer.callback_key_down = [&](igl::opengl::glfw::Viewer& viewer, unsigned char key, int modifier)->bool {
     if (key >= '1' && key <= '9') {
+      //Visualization of internal tetrahedra
       if (const TetrahedralMeshObject* obj_p = dynamic_cast<const TetrahedralMeshObject*>(&obj)){
         double t = double((key - '1')+1) / 9.0;
 
@@ -99,10 +127,8 @@ int main(int argc, char *argv[]) {
         viewer.data().set_face_based(true);
       }
     }else if(key==' '){
-      thread_suspend_flag = true;
-      while(thread_suspend_flag);
+      std::lock_guard lock(mtx);
       simulator->set_initial_config();
-      thread_suspend_flag = true;
     }
     return false;
   };
